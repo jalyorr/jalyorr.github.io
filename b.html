@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Estado de Habitaciones - Hotel</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        .building {
+            margin-bottom: 20px;
+            background-color: #fff;
+            border-radius: 5px;
+            padding: 15px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .building h2 {
+            margin-top: 0;
+            color: #444;
+        }
+        .rooms-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 10px;
+        }
+        .room {
+            padding: 10px;
+            border-radius: 5px;
+            color: white;
+            text-align: center;
+        }
+        .room select {
+            margin-top: 5px;
+            width: 100%;
+            padding: 5px;
+        }
+        .No-Listo { background-color: #e74c3c; }
+        .Pendiente { background-color: #f39c12; }
+        .Listo { background-color: #2ecc71; }
+    </style>
+</head>
+<body>
+    <h1>Estado de Habitaciones del Hotel</h1>
+    <div id="hotelRooms"></div>
+
+    <script>
+        const buildings = ['A', 'B', 'C', 'D', 'E'];
+        const floors = 3;
+        const roomsPerFloor = 4;
+
+        // Función para obtener el estado guardado o inicializar si no existe
+        function getInitialRoomStates() {
+            const savedStates = localStorage.getItem('hotelRoomStates');
+            if (savedStates) {
+                return JSON.parse(savedStates);
+            }
+            const initialStates = {};
+            buildings.forEach(building => {
+                for (let floor = 1; floor <= floors; floor++) {
+                    for (let room = 1; room <= roomsPerFloor; room++) {
+                        initialStates[`${building}${floor}${room}`] = 'No-Listo';
+                    }
+                }
+            });
+            return initialStates;
+        }
+
+        let roomStates = getInitialRoomStates();
+
+        // Función para guardar los estados en localStorage
+        function saveRoomStates() {
+            localStorage.setItem('hotelRoomStates', JSON.stringify(roomStates));
+        }
+
+        // Función para actualizar el estado de una habitación
+        function updateRoomState(roomId, newState) {
+            roomStates[roomId] = newState;
+            saveRoomStates();
+            renderRooms();
+        }
+
+        // Función para renderizar las habitaciones
+        function renderRooms() {
+            const hotelRoomsContainer = document.getElementById('hotelRooms');
+            hotelRoomsContainer.innerHTML = '';
+
+            buildings.forEach(building => {
+                const buildingElement = document.createElement('div');
+                buildingElement.className = 'building';
+                buildingElement.innerHTML = `<h2>Edificio ${building}</h2>`;
+
+                const roomsGrid = document.createElement('div');
+                roomsGrid.className = 'rooms-grid';
+
+                for (let floor = 1; floor <= floors; floor++) {
+                    for (let room = 1; room <= roomsPerFloor; room++) {
+                        const roomId = `${building}${floor}${room}`;
+                        const roomState = roomStates[roomId];
+
+                        const roomElement = document.createElement('div');
+                        roomElement.className = `room ${roomState}`;
+                        roomElement.innerHTML = `
+                            <div>${roomId}</div>
+                            <select onchange="updateRoomState('${roomId}', this.value)">
+                                <option value="No-Listo" ${roomState === 'No-Listo' ? 'selected' : ''}>No Listo</option>
+                                <option value="Pendiente" ${roomState === 'Pendiente' ? 'selected' : ''}>Pendiente</option>
+                                <option value="Listo" ${roomState === 'Listo' ? 'selected' : ''}>Listo</option>
+                            </select>
+                        `;
+
+                        roomsGrid.appendChild(roomElement);
+                    }
+                }
+
+                buildingElement.appendChild(roomsGrid);
+                hotelRoomsContainer.appendChild(buildingElement);
+            });
+        }
+
+        // Inicializar la vista
+        renderRooms();
+    </script>
+</body>
+</html>
