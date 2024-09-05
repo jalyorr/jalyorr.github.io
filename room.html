@@ -1,0 +1,92 @@
+import React, { useState, useEffect } from 'react';
+import { Grid } from 'lucide-react';
+
+const buildings = ['A', 'B', 'C', 'D', 'E'];
+const floors = 3;
+const roomsPerFloor = 4;
+
+const getStatusColor = (status) => {
+  switch (status) {
+    case 'Listo': return 'bg-green-500';
+    case 'Pendiente': return 'bg-yellow-500';
+    case 'No Listo': return 'bg-red-500';
+    default: return 'bg-gray-500';
+  }
+};
+
+const Room = ({ roomId, status, onStatusChange }) => (
+  <div className={`p-4 m-1 rounded ${getStatusColor(status)} text-white flex flex-col items-center justify-center`}>
+    <div>{roomId}</div>
+    <select 
+      value={status} 
+      onChange={(e) => onStatusChange(roomId, e.target.value)}
+      className="mt-2 text-black rounded"
+    >
+      <option>No Listo</option>
+      <option>Pendiente</option>
+      <option>Listo</option>
+    </select>
+  </div>
+);
+
+const HotelRoomsDisplay = () => {
+  const [rooms, setRooms] = useState(() => {
+    // Intenta cargar el estado guardado del localStorage
+    const savedRooms = localStorage.getItem('hotelRooms');
+    if (savedRooms) {
+      return JSON.parse(savedRooms);
+    }
+    
+    // Si no hay estado guardado, inicializa con valores por defecto
+    const initialRooms = {};
+    buildings.forEach(building => {
+      for (let floor = 1; floor <= floors; floor++) {
+        for (let room = 1; room <= roomsPerFloor; room++) {
+          const roomId = `${building}${floor}${room}`;
+          initialRooms[roomId] = 'No Listo';
+        }
+      }
+    });
+    return initialRooms;
+  });
+
+  // Efecto para guardar el estado en localStorage cada vez que cambie
+  useEffect(() => {
+    localStorage.setItem('hotelRooms', JSON.stringify(rooms));
+  }, [rooms]);
+
+  const handleStatusChange = (roomId, newStatus) => {
+    setRooms(prevRooms => ({
+      ...prevRooms,
+      [roomId]: newStatus
+    }));
+  };
+
+  return (
+    <div className="p-4">
+      <h1 className="text-2xl font-bold mb-4 text-center">Estado de Habitaciones del Hotel</h1>
+      {buildings.map(building => (
+        <div key={building} className="mb-8">
+          <h2 className="text-xl font-semibold mb-2">Edificio {building}</h2>
+          <div className="grid grid-cols-4 gap-2">
+            {Array.from({ length: floors * roomsPerFloor }, (_, index) => {
+              const floor = Math.floor(index / roomsPerFloor) + 1;
+              const roomNumber = (index % roomsPerFloor) + 1;
+              const roomId = `${building}${floor}${roomNumber}`;
+              return (
+                <Room 
+                  key={roomId} 
+                  roomId={roomId} 
+                  status={rooms[roomId]} 
+                  onStatusChange={handleStatusChange} 
+                />
+              );
+            })}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+};
+
+export default HotelRoomsDisplay;
