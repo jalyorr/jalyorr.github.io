@@ -1,0 +1,20 @@
+<?php
+
+$host = "aws-0-us-west-1.pooler.supabase.com";
+$username = "postgres.inwhmqkjrdabytklnyvu";
+$password="suwpVu85YRTkxjvt";
+$db="postgres";
+
+$connection = mysqli_connect($host,$username,$password,$db);
+
+$rnumber="333";
+$status = "ada";
+
+$query = "insert into Room (rnumber,status) values('$rnumber','$status')";
+
+mysqli_query($connection,$query);
+ 
+
+<img src="https://example.com/imagen.jpg" alt="Descripción de la imagen">
+<img src="https://www.gstatic.com/webp/gallery/1.webp" style="padding:3px;" width="100px" height="100px" alt="">
+
